@@ -1,8 +1,42 @@
+import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
-  await app.listen(process.env.PORT ?? 3000);
+  const configService = app.get(ConfigService);
+  const port = configService.getOrThrow<number>('app.port');
+  const corsOrigins = configService.getOrThrow<string[]>('app.corsOrigins');
+  const trustProxy = configService.getOrThrow<boolean>('app.trustProxy');
+
+  app.setGlobalPrefix('api');
+  app.use(helmet());
+  app.enableCors({
+    origin: corsOrigins,
+    credentials: true,
+  });
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
+
+  if (trustProxy) {
+    const httpAdapter = app.getHttpAdapter().getInstance() as {
+      set: (key: string, value: unknown) => void;
+    };
+    httpAdapter.set('trust proxy', 1);
+  }
+
+  app.enableShutdownHooks();
+  await app.listen(port);
 }
-bootstrap();
+
+void bootstrap();

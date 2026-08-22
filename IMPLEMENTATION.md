@@ -81,6 +81,7 @@ nestjs-boilerplate/
 │   │   ├── env.validation.ts
 │   │   ├── app.config.ts
 │   │   ├── database.config.ts
+│   │   ├── load-env.ts
 │   │   ├── jwt.config.ts
 │   │   ├── redis.config.ts
 │   │   └── throttle.config.ts
@@ -177,7 +178,8 @@ Remove the stock `app.controller.ts`, `app.service.ts`, and `app.controller.spec
 
 ### Prisma conventions
 
-- Connection string: `DATABASE_URL`
+- Connection is built from `DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `DATABASE_NAME`, and `DATABASE_SCHEMA` (default `public`)
+- Prisma still reads `url = env("DATABASE_URL")`. Do **not** put `DATABASE_URL` in env files; `validateEnv` (Nest) and `src/config/load-env.ts` (Prisma CLI) construct it from those vars
 - Schema lives in `prisma/schema.prisma`
 - Schema changes go through `prisma migrate`
 - Repeat `id`, `createdAt`, `updatedAt`, `deletedAt` on each model that needs them
@@ -217,7 +219,7 @@ Error:
 
 | Stage | Description | Status |
 | --- | --- | --- |
-| 1 | Project setup, tooling, config, bootstrap | ⬜ |
+| 1 | Project setup, tooling, config, bootstrap | ✅ |
 | 2 | Common layer | ⬜ |
 | 3 | Prisma + PostgreSQL | ⬜ |
 | 4 | Logger + Redis | ⬜ |
@@ -246,6 +248,8 @@ Legend: ⬜ Pending · 🔄 In progress · ✅ Done
 - [ ] Add `format:check` script for CI
 - [ ] Install Husky, lint-staged, commitlint
 - [ ] Create `src/config/` (app, database, jwt, redis, throttle + Joi schema)
+- [ ] Split database env into host/port/username/password/name/schema; construct Prisma URL
+- [ ] Add `src/config/load-env.ts` for Prisma CLI
 - [ ] Wire `AppConfigModule` as global
 - [ ] Update `main.ts`: prefix, Helmet, CORS, `ValidationPipe`, trust proxy, shutdown hooks, port from config
 - [ ] Add `.env.example` and `.env.development`
@@ -288,28 +292,46 @@ Add to `package.json`:
 `.env.example` (committed):
 
 ```env
+# App
+# NODE_ENV: development | staging | production | test
 NODE_ENV=development
 PORT=3000
+# Public URL of this API (used in email-verification and password-reset links)
 APP_URL=http://localhost:3000
+# Comma-separated browser origins allowed by CORS
 CORS_ORIGINS=http://localhost:3000,http://localhost:3001
+# Set true when running behind a reverse proxy (reads X-Forwarded-* for client IP)
 TRUST_PROXY=true
 
-DATABASE_URL=postgresql://postgres:password@localhost:5432/nestjs_boilerplate?schema=public
+# PostgreSQL (Prisma URL is built from these; do not set DATABASE_URL)
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USERNAME=postgres
+DATABASE_PASSWORD=password
+DATABASE_NAME=nestjs_boilerplate
+DATABASE_SCHEMA=public
 
+# JWT — secrets must be at least 32 characters
 JWT_SECRET=change-me-access-token-secret-min-32-chars
+# Access token lifetime (e.g. 15m, 1h)
 JWT_EXPIRES_IN=15m
 JWT_REFRESH_SECRET=change-me-refresh-token-secret-min-32-chars
+# Refresh token / session lifetime (e.g. 7d)
 JWT_REFRESH_EXPIRES_IN=7d
 
+# Redis (BullMQ, session list cache, health check)
 REDIS_HOST=localhost
 REDIS_PORT=6379
+# Leave empty if Redis has no password
 REDIS_PASSWORD=
 
+# Rate limiting (milliseconds). Auth write endpoints use the stricter AUTH_* pair.
 THROTTLE_TTL_MS=60000
 THROTTLE_LIMIT=20
 THROTTLE_AUTH_TTL_MS=60000
 THROTTLE_AUTH_LIMIT=5
 
+# Seeded admin (prisma db seed). Change the password before any real deploy.
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=Admin@12345
 ```
@@ -323,12 +345,14 @@ envFilePath: [
 ]
 ```
 
-Joi must require: `NODE_ENV`, `PORT`, `APP_URL`, `CORS_ORIGINS`, `DATABASE_URL`, JWT secrets (min 32 chars), Redis host/port. `REDIS_PASSWORD` may be empty. `TRUST_PROXY` default `true`. Throttle vars optional with the defaults above. `ADMIN_*` required for seed.
+Joi must require: `NODE_ENV`, `PORT`, `APP_URL`, `CORS_ORIGINS`, `DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_USERNAME`, `DATABASE_NAME`, JWT secrets (min 32 chars), Redis host/port. `DATABASE_PASSWORD` and `REDIS_PASSWORD` may be empty. `DATABASE_SCHEMA` default `public`. `TRUST_PROXY` default `true`. Throttle vars optional with the defaults above. `ADMIN_*` required for seed.
+
+`validateEnv` must set `process.env.DATABASE_URL` from the database vars (Prisma cannot read split vars). `src/config/load-env.ts` does the same for Prisma CLI / seed.
 
 ### Config files
 
 - `app.config.ts` → `app.port`, `app.nodeEnv`, `app.appUrl`, `app.corsOrigins`, `app.trustProxy`
-- `database.config.ts` → `database.url` from `DATABASE_URL`
+- `database.config.ts` → `database.host`, `database.port`, `database.username`, `database.password`, `database.name`, `database.schema`, plus constructed `database.url`
 - `jwt.config.ts` → secret, expiresIn, refreshSecret, refreshExpiresIn
 - `redis.config.ts` → host, port, password
 - `throttle.config.ts` → default ttl/limit and stricter auth ttl/limit
@@ -394,7 +418,7 @@ volumes:
 docker compose up -d
 ```
 
-`DATABASE_URL` and Redis host/port in `.env.development` should match this compose file.
+Database vars (`DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `DATABASE_NAME`, `DATABASE_SCHEMA`) and Redis host/port in `.env.development` should match this compose file.
 
 ---
 
@@ -462,7 +486,7 @@ EMAIL_VERIFICATION_COOLDOWN_MINUTES: 1,
 - [ ] Install Prisma
 - [ ] Add `prisma/schema.prisma`
 - [ ] Add `PrismaService` + global `PrismaModule`
-- [ ] Add npm scripts
+- [ ] Add npm scripts (Prisma CLI must load `src/config/load-env.ts` so `DATABASE_URL` is constructed)
 - [ ] Run initial migration
 - [ ] Enable `prisma generate` on install (`postinstall`)
 
@@ -475,6 +499,8 @@ npx prisma init
 ```
 
 ### `prisma/schema.prisma`
+
+Prisma only accepts a URL (`url = env("DATABASE_URL")`). Env files store split `DATABASE_*` vars; `validateEnv` / `src/config/load-env.ts` set `DATABASE_URL` before Prisma runs. Do not add `DATABASE_URL` to `.env*`.
 
 ```prisma
 generator client {
@@ -554,14 +580,14 @@ Extend `PrismaClient`, implement `OnModuleInit` / `OnModuleDestroy`:
 ```json
 {
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node -r ./src/config/load-env.ts prisma/seed.ts"
   },
   "scripts": {
-    "postinstall": "prisma generate",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:migrate:deploy": "prisma migrate deploy",
-    "prisma:studio": "prisma studio",
+    "postinstall": "node -r ts-node/register/transpile-only -r ./src/config/load-env.ts node_modules/prisma/build/index.js generate",
+    "prisma:generate": "node -r ts-node/register/transpile-only -r ./src/config/load-env.ts node_modules/prisma/build/index.js generate",
+    "prisma:migrate": "node -r ts-node/register/transpile-only -r ./src/config/load-env.ts node_modules/prisma/build/index.js migrate dev",
+    "prisma:migrate:deploy": "node -r ts-node/register/transpile-only -r ./src/config/load-env.ts node_modules/prisma/build/index.js migrate deploy",
+    "prisma:studio": "node -r ts-node/register/transpile-only -r ./src/config/load-env.ts node_modules/prisma/build/index.js studio",
     "seed": "prisma db seed"
   }
 }
@@ -1025,6 +1051,7 @@ Do **not** add Nest seeder modules under `src/database/`. Seeds use `PrismaClien
 ### `prisma/seed.ts` (runner)
 
 ```ts
+import '../src/config/load-env';
 import { PrismaClient } from '@prisma/client';
 import { seedAdmin } from './seeds/admin.seed';
 
@@ -1082,7 +1109,12 @@ jobs:
   lint-and-build:
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: postgresql://user:pass@localhost:5432/ci?schema=public
+      DATABASE_HOST: localhost
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: user
+      DATABASE_PASSWORD: pass
+      DATABASE_NAME: ci
+      DATABASE_SCHEMA: public
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -1090,7 +1122,7 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - run: npx prisma generate
+      - run: npm run prisma:generate
       - run: npm run format:check
       - run: npm run lint
       - run: npm run build
@@ -1125,7 +1157,12 @@ jobs:
       PORT: 3000
       APP_URL: http://localhost:3000
       CORS_ORIGINS: http://localhost:3000
-      DATABASE_URL: postgresql://postgres:password@localhost:5432/nestjs_boilerplate?schema=public
+      DATABASE_HOST: localhost
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: password
+      DATABASE_NAME: nestjs_boilerplate
+      DATABASE_SCHEMA: public
       JWT_SECRET: ci-access-token-secret-min-32-chars!!
       JWT_REFRESH_SECRET: ci-refresh-token-secret-min-32-chars!!
       REDIS_HOST: localhost
@@ -1139,7 +1176,7 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - run: npx prisma migrate deploy
+      - run: npm run prisma:migrate:deploy
       - run: npm run seed
       - run: npm run test:e2e
 ```
@@ -1164,10 +1201,10 @@ jobs:
 ```bash
 docker compose up -d
 cp .env.example .env.development
-# set DATABASE_URL and JWT secrets if they differ from compose defaults
+# set DATABASE_* and JWT secrets if they differ from compose defaults
 
 npm install
-npx prisma migrate dev --name init
+npm run prisma:migrate
 npm run seed
 npm run start:dev
 ```
@@ -1227,7 +1264,7 @@ Use existing `npm run test:e2e` (`jest --config ./test/jest-e2e.json`). Tests bo
 
 For verify-email, the raw token is not in the HTTP response. The test generates a token, writes `sha256(token)` + expiry with Prisma, then calls the API.
 
-Point e2e `DATABASE_URL` / Redis at Compose locally. CI uses service containers (Stage 11).
+Point e2e `DATABASE_*` / Redis at Compose locally. CI uses service containers (Stage 11).
 
 Throttle: use unique emails per test (timestamp or uuid) so auth limits do not flake. If needed, raise `THROTTLE_AUTH_LIMIT` in the e2e env.
 
@@ -1244,7 +1281,7 @@ Throttle: use unique emails per test (timestamp or uuid) so auth limits do not f
 | DB columns | snake_case via `@map` | `created_at` |
 | Commits | conventional, lower-case subject | `feat: add jwt auth with refresh tokens` |
 
-Commitlint: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `revert`, `build`, `ci`. Subject max 72 chars, lower-case.
+Commitlint: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `revert`, `build`, `ci`. Subject max 100 chars, lower-case.
 
 ### Import order
 
