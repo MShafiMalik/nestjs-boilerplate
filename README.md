@@ -1,98 +1,108 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# NestJS Boilerplate
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Production-oriented NestJS 11 API starter with Prisma, PostgreSQL, Redis, BullMQ, JWT auth (access + refresh), sessions, Winston logging, and a Terminus health check.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Stack
 
-## Description
+| Area | Choice |
+| --- | --- |
+| Framework | NestJS 11 |
+| Database | PostgreSQL + Prisma |
+| Cache / queues | Redis + BullMQ |
+| Auth | Passport JWT (access + refresh), session tracking |
+| Logging | Winston |
+| Config | `@nestjs/config` + Joi |
+| Health | `@nestjs/terminus` (`GET /health`) |
+| CI | GitHub Actions (`master`, `develop`) |
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+API routes use the `/api` prefix. Health is excluded and lives at `GET /health`.
 
-## Project setup
+## Prerequisites
+
+- Node.js 20+
+- Docker (for Postgres + Redis) or equivalent local services
+
+## Local setup
 
 ```bash
-$ npm install
+docker compose up -d
+cp .env.example .env.development
+# Adjust DATABASE_* / JWT secrets if they differ from compose defaults
+
+npm install
+npm run prisma:migrate
+npm run seed
+npm run start:dev
 ```
 
-## Compile and run the project
+Compose maps Postgres to host port **5433** (see `DATABASE_PORT` in `.env.example`) so it does not collide with a local Postgres on `5432`. Redis stays on `6379`.
+
+Default seeded admin (change before any real deploy):
+
+- Email: `ADMIN_EMAIL` from env (example: `admin@example.com`)
+- Password: `ADMIN_PASSWORD` from env
+
+## Useful URLs
+
+| URL | Notes |
+| --- | --- |
+| `http://localhost:3000/api` | API base |
+| `http://localhost:3000/health` | Liveness/readiness (DB + Redis + memory) |
+| Postman collection | `postman/nestjs-boilerplate.postman_collection.json` |
+
+## Scripts
+
+| Script | Purpose |
+| --- | --- |
+| `npm run start:dev` | Dev server with watch |
+| `npm run start:prod` | Run compiled `dist/main` |
+| `npm run build` | Compile TypeScript |
+| `npm run lint` | ESLint with `--fix` |
+| `npm run format` / `format:check` | Prettier write / CI check |
+| `npm run prisma:generate` | Generate Prisma client |
+| `npm run prisma:migrate` | Migrate (dev) |
+| `npm run prisma:migrate:deploy` | Migrate (CI/prod) |
+| `npm run seed` | Seed admin user |
+| `npm run test` | Unit tests |
+| `npm run test:e2e` | E2E tests (needs Postgres + Redis + env) |
+
+## Environment
+
+Copy `.env.example` to `.env.development` (or `.env.<NODE_ENV>`). Do **not** set `DATABASE_URL` — it is built from `DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `DATABASE_NAME`, and `DATABASE_SCHEMA`.
+
+Required highlights:
+
+- App: `NODE_ENV`, `PORT`, `APP_URL`, `CORS_ORIGINS`
+- Database: `DATABASE_*` as above
+- JWT: `JWT_SECRET`, `JWT_REFRESH_SECRET` (min 32 chars each)
+- Redis: `REDIS_HOST`, `REDIS_PORT` (`REDIS_PASSWORD` optional)
+- Seed: `ADMIN_EMAIL`, `ADMIN_PASSWORD`
+
+See `.env.example` for throttle and other optional defaults.
+
+## Project layout
+
+Feature modules live under `src/modules/` and are aggregated by `ModulesModule` (queues, users, auth/sessions, health). Shared pieces: `src/config`, `src/common`, `src/database`, `src/shared` (Winston, Redis).
+
+Global wiring in `AppModule` / `main.ts`:
+
+- Guards: `ThrottlerGuard`, `JwtAuthGuard`, `RolesGuard`
+- Filter / interceptors: `HttpExceptionFilter`, `LoggingInterceptor`, `ResponseInterceptor`
+- Logger: Winston via `app.useLogger(LoggerService)`
+- Middleware: request id on `{*path}`
+
+## E2E
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+docker compose up -d
+# env pointed at Compose Postgres/Redis
+npm run prisma:migrate:deploy
+npm run seed
+npm run test:e2e
 ```
 
-## Run tests
+CI runs the same flow with service containers (see `.github/workflows/ci.yml`).
 
-```bash
-# unit tests
-$ npm run test
+## Implementation plan
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Step-by-step stages and decisions are documented in [`IMPLEMENTATION.md`](./IMPLEMENTATION.md).

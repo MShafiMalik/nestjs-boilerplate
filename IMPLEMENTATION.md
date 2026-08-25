@@ -230,7 +230,7 @@ Error:
 | 9 | Health check | ✅ |
 | 10 | Seed + admin user | ✅ |
 | 11 | GitHub Actions CI | ✅ |
-| 12 | README + final wiring | ⬜ |
+| 12 | README + final wiring | ✅ |
 | 13 | E2E suite | ⬜ |
 
 Legend: ⬜ Pending · 🔄 In progress · ✅ Done
@@ -1191,12 +1191,12 @@ jobs:
 
 ### Tasks
 
-- [ ] Replace stock Nest README with a short project README
-- [ ] Confirm `AppModule` import order and global guards
-- [ ] Confirm stock `AppController` / `AppService` are gone
-- [ ] Confirm Winston is wired with `app.useLogger`
-- [ ] List scripts, env vars, and how to run locally (including e2e)
-- [ ] Mark all stages complete in this file
+- [x] Replace stock Nest README with a short project README
+- [x] Confirm `AppModule` import order and global guards
+- [x] Confirm stock `AppController` / `AppService` are gone
+- [x] Confirm Winston is wired with `app.useLogger`
+- [x] List scripts, env vars, and how to run locally (including e2e)
+- [x] Mark all stages complete in this file
 
 ### Local run (document in README)
 
