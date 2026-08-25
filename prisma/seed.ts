@@ -1,9 +1,11 @@
+import '../src/config/load-env';
 import { PrismaClient } from '@prisma/client/index.js';
+import { seedAdmin } from './seeds/admin.seed';
 
 const prisma = new PrismaClient();
 
 async function main(): Promise<void> {
-  // Seed runners land in Stage 10 (prisma/seeds/admin.seed.ts).
+  await seedAdmin(prisma);
 }
 
 main()

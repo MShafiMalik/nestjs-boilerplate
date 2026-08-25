@@ -228,7 +228,7 @@ Error:
 | 7 | Session management | ✅ |
 | 8 | BullMQ queues | ✅ |
 | 9 | Health check | ✅ |
-| 10 | Seed + admin user | ⬜ |
+| 10 | Seed + admin user | ✅ |
 | 11 | GitHub Actions CI | ⬜ |
 | 12 | README + final wiring | ⬜ |
 | 13 | E2E suite | ⬜ |
@@ -1042,11 +1042,11 @@ app.setGlobalPrefix('api', { exclude: ['health'] });
 
 ### Tasks
 
-- [ ] Implement `prisma/seed.ts` as the Prisma CLI runner only
-- [ ] Implement `prisma/seeds/admin.seed.ts` (create admin if missing)
-- [ ] Hash password with bcrypt (same salt rounds as `APP_CONSTANTS.SALT_ROUNDS`)
-- [ ] Normalize admin email to lowercase
-- [ ] Idempotent: skip if that email already exists
+- [x] Implement `prisma/seed.ts` as the Prisma CLI runner only
+- [x] Implement `prisma/seeds/admin.seed.ts` (create admin if missing)
+- [x] Hash password with bcrypt (same salt rounds as `APP_CONSTANTS.SALT_ROUNDS`)
+- [x] Normalize admin email to lowercase
+- [x] Idempotent: skip if that email already exists
 
 Do **not** add Nest seeder modules under `src/database/`. Seeds use `PrismaClient` directly so they work without Redis/queues.
 
