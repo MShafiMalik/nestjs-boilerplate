@@ -220,7 +220,7 @@ Error:
 | Stage | Description | Status |
 | --- | --- | --- |
 | 1 | Project setup, tooling, config, bootstrap | ✅ |
-| 2 | Common layer | ⬜ |
+| 2 | Common layer | ✅ |
 | 3 | Prisma + PostgreSQL | ⬜ |
 | 4 | Logger + Redis | ⬜ |
 | 5 | Users module | ⬜ |
@@ -473,7 +473,7 @@ EMAIL_VERIFICATION_COOLDOWN_MINUTES: 1,
 
 `PaginationDto`: optional `page` (min 1), `limit` (min 1, max 100).
 
-`PaginatedResponse<T>`: `items` + `meta` (`page`, `limit`, `totalItems`, `totalPages`, `hasNextPage`, `hasPreviousPage`).
+`PaginatedResponseDto<T>`: `items` + `meta` (`PaginationMetaDto`: `page`, `limit`, `totalItems`, `totalPages`, `hasNextPage`, `hasPreviousPage`). Classes in `dto/`, not TypeScript `type` aliases.
 
 ---
 
@@ -1227,7 +1227,7 @@ HealthModule
 
 Register `ThrottlerModule.forRootAsync` in `AppModule` (not only AuthModule) and provide `ThrottlerGuard` as a global `APP_GUARD` next to `JwtAuthGuard` and `RolesGuard`.
 
-`RequestIdMiddleware` on `*`.
+`RequestIdMiddleware` on `{*path}` (Nest 11 path-to-regexp wildcard).
 
 `main.ts` globals: `bufferLogs` + `useLogger(LoggerService)`, `HttpExceptionFilter`, `LoggingInterceptor`, `ResponseInterceptor`.
 
