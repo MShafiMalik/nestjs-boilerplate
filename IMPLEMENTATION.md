@@ -226,7 +226,7 @@ Error:
 | 5 | Users module | ✅ |
 | 6 | Auth module (JWT + refresh) | ✅ |
 | 7 | Session management | ✅ |
-| 8 | BullMQ queues | ⬜ |
+| 8 | BullMQ queues | ✅ |
 | 9 | Health check | ⬜ |
 | 10 | Seed + admin user | ⬜ |
 | 11 | GitHub Actions CI | ⬜ |
@@ -931,13 +931,13 @@ List endpoint maps `isCurrent` from `CurrentUser().sessionId`.
 
 ### Tasks
 
-- [ ] Install `@nestjs/bullmq` + `bullmq`
-- [ ] `QueuesModule` registers queues from constants
-- [ ] `NotificationsProcessor` — welcome-email, email-verification, and password-reset-email jobs (log payload)
-- [ ] `CronProcessor` — daily expired-session cleanup
-- [ ] Register repeatable cron on module init
-- [ ] `AuthService.register` / `resendEmailVerification` enqueue email-verification; `verifyEmail` enqueues welcome-email; `forgotPassword` enqueues password-reset-email
-- [ ] Import `QueuesModule` in `AppModule`
+- [x] Install `@nestjs/bullmq` + `bullmq`
+- [x] `QueuesModule` registers queues from constants
+- [x] `NotificationsProcessor` — welcome-email, email-verification, and password-reset-email jobs (log payload)
+- [x] `CronProcessor` — daily expired-session cleanup
+- [x] Register repeatable cron on module init
+- [x] `AuthService.register` / `resendEmailVerification` enqueue email-verification; `verifyEmail` enqueues welcome-email; `forgotPassword` enqueues password-reset-email
+- [x] Import `QueuesModule` in `AppModule`
 
 ```bash
 npm install @nestjs/bullmq bullmq

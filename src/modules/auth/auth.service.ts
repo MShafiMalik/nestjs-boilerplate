@@ -1,12 +1,13 @@
 import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Role } from '@prisma/client/index.js';
+import { Queue } from 'bullmq';
 import { APP_CONSTANTS } from '../../common/constants/app.constants';
-import { NOTIFICATION_JOBS } from '../../common/constants/queue.constants';
+import { NOTIFICATION_JOBS, QUEUES } from '../../common/constants/queue.constants';
 import { JwtPayload, JwtRefreshPayload } from '../../common/types/jwt-payload.type';
 import { UtilService } from '../../common/util/util.service';
-import { LoggerService } from '../../shared/logger/logger.service';
 import { SafeUser, UsersService } from '../users/users.service';
 import { UsersRepository } from '../users/users.repository';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -34,7 +35,8 @@ export class AuthService {
     private readonly utilService: UtilService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-    private readonly logger: LoggerService,
+    @InjectQueue(QUEUES.NOTIFICATIONS)
+    private readonly notificationsQueue: Queue,
   ) {}
 
   async register(dto: RegisterDto): Promise<{ message: string }> {
@@ -63,7 +65,7 @@ export class AuthService {
       sentAt,
     );
 
-    this.enqueueEmailVerification(user.email, user.name, verificationToken);
+    await this.enqueueEmailVerification(user.email, user.name, verificationToken);
 
     return { message: 'Check your email to verify your account' };
   }
@@ -147,16 +149,12 @@ export class AuthService {
     const appUrl = this.configService.getOrThrow<string>('app.appUrl');
     const resetUrl = `${appUrl}/reset-password?token=${resetToken}`;
 
-    this.logger.log(
-      {
-        job: NOTIFICATION_JOBS.PASSWORD_RESET_EMAIL,
-        email: user.email,
-        name: user.name,
-        resetToken,
-        resetUrl,
-      },
-      AuthService.name,
-    );
+    await this.notificationsQueue.add(NOTIFICATION_JOBS.PASSWORD_RESET_EMAIL, {
+      email: user.email,
+      name: user.name,
+      resetToken,
+      resetUrl,
+    });
 
     return message;
   }
@@ -186,15 +184,11 @@ export class AuthService {
 
     const session = await this.sessionsService.createSession(user.id, dto.deviceInfo, ipAddress, userAgent);
 
-    this.logger.log(
-      {
-        job: NOTIFICATION_JOBS.WELCOME_EMAIL,
-        userId: user.id,
-        email: user.email,
-        name: user.name,
-      },
-      AuthService.name,
-    );
+    await this.notificationsQueue.add(NOTIFICATION_JOBS.WELCOME_EMAIL, {
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+    });
 
     return this.buildAuthResponse(user.id, session.id);
   }
@@ -230,25 +224,21 @@ export class AuthService {
       sentAt,
     );
 
-    this.enqueueEmailVerification(user.email, user.name, verificationToken);
+    await this.enqueueEmailVerification(user.email, user.name, verificationToken);
 
     return message;
   }
 
-  private enqueueEmailVerification(email: string, name: string, verificationToken: string): void {
+  private async enqueueEmailVerification(email: string, name: string, verificationToken: string): Promise<void> {
     const appUrl = this.configService.getOrThrow<string>('app.appUrl');
     const verifyUrl = `${appUrl}/verify-email?token=${verificationToken}`;
 
-    this.logger.log(
-      {
-        job: NOTIFICATION_JOBS.EMAIL_VERIFICATION,
-        email,
-        name,
-        verificationToken,
-        verifyUrl,
-      },
-      AuthService.name,
-    );
+    await this.notificationsQueue.add(NOTIFICATION_JOBS.EMAIL_VERIFICATION, {
+      email,
+      name,
+      verificationToken,
+      verifyUrl,
+    });
   }
 
   private async buildAuthResponse(userId: string, sessionId: string): Promise<AuthTokensResponse> {
