@@ -229,7 +229,7 @@ Error:
 | 8 | BullMQ queues | ✅ |
 | 9 | Health check | ✅ |
 | 10 | Seed + admin user | ✅ |
-| 11 | GitHub Actions CI | ⬜ |
+| 11 | GitHub Actions CI | ✅ |
 | 12 | README + final wiring | ⬜ |
 | 13 | E2E suite | ⬜ |
 
@@ -1093,19 +1093,19 @@ Runs with `prisma db seed` / `npm run seed`.
 
 ### Tasks
 
-- [ ] Add `.github/workflows/ci.yml`
-- [ ] Trigger on push/PR to `main` and `develop`
-- [ ] Node 20, `npm ci`, `prisma generate`, format check, lint, build
-- [ ] E2e job with Postgres + Redis service containers
+- [x] Add `.github/workflows/ci.yml`
+- [x] Trigger on push/PR to `master` and `develop`
+- [x] Node 20, `npm ci`, `prisma generate`, format check, lint, build
+- [x] E2e job with Postgres + Redis service containers
 
 ```yaml
 name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [master, develop]
   pull_request:
-    branches: [main, develop]
+    branches: [master, develop]
 
 jobs:
   lint-and-build:
