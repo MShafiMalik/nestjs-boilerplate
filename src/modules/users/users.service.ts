@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client/index.js';
+import { SessionsService } from '../auth/sessions/sessions.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserPublic, UsersRepository } from './users.repository';
 
@@ -15,7 +16,10 @@ export type SafeUser = Omit<
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly sessionsService: SessionsService,
+  ) {}
 
   async findById(id: string): Promise<SafeUser> {
     const user = await this.usersRepository.findById(id);
@@ -74,6 +78,7 @@ export class UsersService {
   }
 
   async softDelete(id: string, email: string): Promise<SafeUser> {
+    await this.sessionsService.revokeAll(id);
     const user = await this.usersRepository.softDelete(id, email);
     return this.toSafeUser(user);
   }

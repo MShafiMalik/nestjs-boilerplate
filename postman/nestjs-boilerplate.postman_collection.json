@@ -252,6 +252,62 @@
       ]
     },
     {
+      "name": "Sessions",
+      "item": [
+        {
+          "name": "List Sessions",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/auth/sessions",
+            "description": "Lists current user's sessions. isCurrent marks the access-token session."
+          }
+        },
+        {
+          "name": "Revoke Other Sessions",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/auth/sessions/others"
+          }
+        },
+        {
+          "name": "Revoke One Session",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/auth/sessions/:id",
+            "description": "Replace :id with a session UUID from List Sessions."
+          }
+        },
+        {
+          "name": "Revoke All Sessions",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/auth/sessions",
+            "description": "Logs out every device including the current one."
+          }
+        }
+      ]
+    },
+    {
       "name": "Misc",
       "item": [
         {
