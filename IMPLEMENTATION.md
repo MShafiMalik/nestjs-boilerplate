@@ -227,7 +227,7 @@ Error:
 | 6 | Auth module (JWT + refresh) | ✅ |
 | 7 | Session management | ✅ |
 | 8 | BullMQ queues | ✅ |
-| 9 | Health check | ⬜ |
+| 9 | Health check | ✅ |
 | 10 | Seed + admin user | ⬜ |
 | 11 | GitHub Actions CI | ⬜ |
 | 12 | README + final wiring | ⬜ |
@@ -1001,10 +1001,10 @@ Use the same Redis connection settings as `RedisModule`.
 
 ### Tasks
 
-- [ ] Install Terminus
-- [ ] `HealthController` at `GET /health` (excluded from `api` prefix)
-- [ ] Indicators: Prisma (`SELECT 1`), Redis `ping`, memory heap
-- [ ] Public route and `@SkipThrottle()`
+- [x] Install Terminus
+- [x] `HealthController` at `GET /health` (excluded from `api` prefix)
+- [x] Indicators: Prisma (`SELECT 1`), Redis `ping`, memory heap
+- [x] Public route and `@SkipThrottle()`
 
 ```bash
 npm install @nestjs/terminus

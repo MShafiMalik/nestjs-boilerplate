@@ -26,6 +26,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
       status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
 
+      // Pass through Terminus health check payloads (HTTP 503).
+      if (this.isHealthCheckResult(exceptionResponse)) {
+        response.status(status).json(exceptionResponse);
+        return;
+      }
+
       if (typeof exceptionResponse === 'string') {
         message = exceptionResponse;
         code = this.resolveCode(status);
@@ -65,5 +71,17 @@ export class HttpExceptionFilter implements ExceptionFilter {
   private resolveCode(status: number): string {
     const statusName = (HttpStatus as unknown as Record<number, string>)[status];
     return statusName || 'INTERNAL_SERVER_ERROR';
+  }
+
+  private isHealthCheckResult(payload: unknown): boolean {
+    if (typeof payload !== 'object' || payload === null) {
+      return false;
+    }
+
+    const body = payload as Record<string, unknown>;
+    return (
+      typeof body.status === 'string' &&
+      (body.info !== undefined || body.error !== undefined || body.details !== undefined)
+    );
   }
 }

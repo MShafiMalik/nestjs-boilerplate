@@ -17,7 +17,7 @@ async function bootstrap(): Promise<void> {
   const corsOrigins = configService.getOrThrow<string[]>('app.corsOrigins');
   const trustProxy = configService.getOrThrow<boolean>('app.trustProxy');
 
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api', { exclude: ['health'] });
   app.use(helmet());
   app.enableCors({
     origin: corsOrigins,
