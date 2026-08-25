@@ -224,7 +224,7 @@ Error:
 | 3 | Prisma + PostgreSQL | ✅ |
 | 4 | Logger + Redis | ✅ |
 | 5 | Users module | ✅ |
-| 6 | Auth module (JWT + refresh) | ⬜ |
+| 6 | Auth module (JWT + refresh) | ✅ |
 | 7 | Session management | ⬜ |
 | 8 | BullMQ queues | ⬜ |
 | 9 | Health check | ⬜ |
