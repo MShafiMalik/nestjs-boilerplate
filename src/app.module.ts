@@ -10,9 +10,10 @@ import { AppConfigModule } from './config/config.module';
 import { PrismaModule } from './database/prisma.module';
 import { LoggerModule } from './shared/logger/logger.module';
 import { RedisModule } from './shared/redis/redis.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
-  imports: [AppConfigModule, PrismaModule, UtilModule, LoggerModule, RedisModule],
+  imports: [AppConfigModule, PrismaModule, UtilModule, LoggerModule, RedisModule, UsersModule],
   controllers: [AppController],
   providers: [AppService, HttpExceptionFilter, LoggingInterceptor, ResponseInterceptor],
 })

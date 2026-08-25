@@ -223,7 +223,7 @@ Error:
 | 2 | Common layer | ✅ |
 | 3 | Prisma + PostgreSQL | ✅ |
 | 4 | Logger + Redis | ✅ |
-| 5 | Users module | ⬜ |
+| 5 | Users module | ✅ |
 | 6 | Auth module (JWT + refresh) | ⬜ |
 | 7 | Session management | ⬜ |
 | 8 | BullMQ queues | ⬜ |
