@@ -4,9 +4,10 @@ import { AppService } from './app.service';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { UtilModule } from './common/util/util.module';
 import { AppConfigModule } from './config/config.module';
+import { PrismaModule } from './database/prisma.module';
 
 @Module({
-  imports: [AppConfigModule, UtilModule],
+  imports: [AppConfigModule, PrismaModule, UtilModule],
   controllers: [AppController],
   providers: [AppService],
 })

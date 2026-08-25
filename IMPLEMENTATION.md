@@ -221,7 +221,7 @@ Error:
 | --- | --- | --- |
 | 1 | Project setup, tooling, config, bootstrap | ✅ |
 | 2 | Common layer | ✅ |
-| 3 | Prisma + PostgreSQL | ⬜ |
+| 3 | Prisma + PostgreSQL | ✅ |
 | 4 | Logger + Redis | ⬜ |
 | 5 | Users module | ⬜ |
 | 6 | Auth module (JWT + refresh) | ⬜ |
@@ -304,8 +304,10 @@ CORS_ORIGINS=http://localhost:3000,http://localhost:3001
 TRUST_PROXY=true
 
 # PostgreSQL (Prisma URL is built from these; do not set DATABASE_URL)
+# PostgreSQL (Prisma URL is built from these; do not set DATABASE_URL)
+# Host port 5433 avoids clashing with a local Windows PostgreSQL on 5432
 DATABASE_HOST=localhost
-DATABASE_PORT=5432
+DATABASE_PORT=5433
 DATABASE_USERNAME=postgres
 DATABASE_PASSWORD=password
 DATABASE_NAME=nestjs_boilerplate
@@ -384,7 +386,7 @@ services:
   postgres:
     image: postgres:16-alpine
     ports:
-      - '5432:5432'
+      - '5433:5432'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
