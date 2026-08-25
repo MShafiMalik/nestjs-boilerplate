@@ -222,7 +222,7 @@ Error:
 | 1 | Project setup, tooling, config, bootstrap | ✅ |
 | 2 | Common layer | ✅ |
 | 3 | Prisma + PostgreSQL | ✅ |
-| 4 | Logger + Redis | ⬜ |
+| 4 | Logger + Redis | ✅ |
 | 5 | Users module | ⬜ |
 | 6 | Auth module (JWT + refresh) | ⬜ |
 | 7 | Session management | ⬜ |

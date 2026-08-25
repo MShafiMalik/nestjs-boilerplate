@@ -6,9 +6,12 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { LoggerService } from './shared/logger/logger.service';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  app.useLogger(app.get(LoggerService));
+
   const configService = app.get(ConfigService);
   const port = configService.getOrThrow<number>('app.port');
   const corsOrigins = configService.getOrThrow<string[]>('app.corsOrigins');
@@ -30,8 +33,8 @@ async function bootstrap(): Promise<void> {
       },
     }),
   );
-  app.useGlobalFilters(new HttpExceptionFilter());
-  app.useGlobalInterceptors(new LoggingInterceptor(), new ResponseInterceptor());
+  app.useGlobalFilters(app.get(HttpExceptionFilter));
+  app.useGlobalInterceptors(app.get(LoggingInterceptor), app.get(ResponseInterceptor));
 
   if (trustProxy) {
     const httpAdapter = app.getHttpAdapter().getInstance() as {
