@@ -86,47 +86,61 @@ nestjs-boilerplate/
 │   │   ├── redis.config.ts
 │   │   └── throttle.config.ts
 │   ├── common/
-│   │   ├── constants/app.constants.ts
-│   │   ├── constants/queue.constants.ts
-│   │   ├── decorators/public.decorator.ts
-│   │   ├── decorators/roles.decorator.ts
-│   │   ├── decorators/current-user.decorator.ts
-│   │   ├── dto/pagination.dto.ts
-│   │   ├── dto/pagination-response.dto.ts
-│   │   ├── enums/role.enum.ts
-│   │   ├── enums/platform.enum.ts
-│   │   ├── filters/http-exception.filter.ts
-│   │   ├── guards/jwt-auth.guard.ts
-│   │   ├── guards/roles.guard.ts
-│   │   ├── interceptors/logging.interceptor.ts
-│   │   ├── interceptors/response.interceptor.ts
-│   │   ├── middleware/request-id.middleware.ts
-│   │   ├── types/api-response.type.ts
-│   │   ├── types/jwt-payload.type.ts
-│   │   ├── util/util.module.ts
-│   │   └── util/util.service.ts
+│   │   ├── constants/
+│   │   │   ├── app.constants.ts
+│   │   │   └── queue.constants.ts
+│   │   ├── decorators/
+│   │   │   ├── public.decorator.ts
+│   │   │   ├── roles.decorator.ts
+│   │   │   └── current-user.decorator.ts
+│   │   ├── dto/
+│   │   │   ├── pagination.dto.ts
+│   │   │   └── pagination-response.dto.ts
+│   │   ├── enums/
+│   │   │   ├── role.enum.ts
+│   │   │   └── platform.enum.ts
+│   │   ├── filters/
+│   │   │   └── http-exception.filter.ts
+│   │   ├── guards/
+│   │   │   ├── jwt-auth.guard.ts
+│   │   │   └── roles.guard.ts
+│   │   ├── interceptors/
+│   │   │   ├── logging.interceptor.ts
+│   │   │   └── response.interceptor.ts
+│   │   ├── middleware/
+│   │   │   └── request-id.middleware.ts
+│   │   ├── types/
+│   │   │   ├── api-response.type.ts
+│   │   │   └── jwt-payload.type.ts
+│   │   └── util/
+│   │       ├── util.module.ts
+│   │       └── util.service.ts
 │   ├── database/
 │   │   ├── prisma.module.ts
 │   │   └── prisma.service.ts
 │   ├── shared/
-│   │   ├── logger/logger.module.ts
-│   │   ├── logger/logger.service.ts
-│   │   ├── redis/redis.module.ts
-│   │   └── redis/redis.constants.ts
+│   │   ├── logger/
+│   │   │   ├── logger.module.ts
+│   │   │   └── logger.service.ts
+│   │   └── redis/
+│   │       ├── redis.module.ts
+│   │       └── redis.constants.ts
 │   └── modules/
 │       ├── auth/
 │       │   ├── auth.module.ts
 │       │   ├── auth.controller.ts
 │       │   ├── auth.service.ts
-│       │   ├── strategies/jwt.strategy.ts
-│       │   ├── strategies/jwt-refresh.strategy.ts
+│       │   ├── strategies/
+│       │   │   ├── jwt.strategy.ts
+│       │   │   └── jwt-refresh.strategy.ts
 │       │   ├── sessions/
 │       │   │   ├── sessions.module.ts
 │       │   │   ├── sessions.controller.ts
 │       │   │   ├── sessions.service.ts
 │       │   │   ├── sessions.repository.ts
 │       │   │   ├── device-parser.service.ts
-│       │   │   └── dto/session-response.dto.ts
+│       │   │   └── dto/
+│       │   │       └── session-response.dto.ts
 │       │   └── dto/
 │       │       ├── register.dto.ts
 │       │       ├── login.dto.ts
@@ -141,7 +155,8 @@ nestjs-boilerplate/
 │       │   ├── users.module.ts
 │       │   ├── users.service.ts
 │       │   ├── users.repository.ts
-│       │   └── dto/update-user.dto.ts
+│       │   └── dto/
+│       │       └── update-user.dto.ts
 │       ├── health/
 │       │   ├── health.module.ts
 │       │   └── health.controller.ts
