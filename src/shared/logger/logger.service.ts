@@ -11,6 +11,7 @@ export class LoggerService implements NestLoggerService {
   constructor(private readonly configService: ConfigService) {
     const nodeEnv = this.configService.get<string>('app.nodeEnv') ?? 'development';
     const isProduction = nodeEnv === 'production';
+    const isE2e = process.env.E2E_TESTING === 'true';
 
     const consoleFormat = winston.format.combine(
       winston.format.timestamp(),
@@ -30,7 +31,7 @@ export class LoggerService implements NestLoggerService {
 
     const transports: winston.transport[] = [
       new winston.transports.Console({
-        level: isProduction ? 'info' : 'debug',
+        level: isE2e ? 'error' : isProduction ? 'info' : 'debug',
         format: isProduction ? jsonFormat : consoleFormat,
       }),
     ];

@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Headers, Ip, Patch, Post, UseGuards } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import type { JwtPayload, JwtRefreshPayload } from '../../common/types/jwt-payload.type';
@@ -16,18 +16,21 @@ import { VerifyEmailDto } from './dto/verify-email.dto';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 
 @Controller('auth')
+@SkipThrottle({ auth: true })
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
-  @Throttle({ auth: { limit: 5, ttl: 60000 } })
+  @SkipThrottle({ default: true, auth: false })
+  @Throttle({ auth: {} })
   @Post('register')
   register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
   }
 
   @Public()
-  @Throttle({ auth: { limit: 5, ttl: 60000 } })
+  @SkipThrottle({ default: true, auth: false })
+  @Throttle({ auth: {} })
   @Post('login')
   login(@Body() dto: LoginDto, @Ip() ip: string, @Headers('user-agent') userAgent?: string) {
     return this.authService.login(dto, ip, userAgent);
@@ -35,7 +38,8 @@ export class AuthController {
 
   @Public()
   @UseGuards(JwtRefreshGuard)
-  @Throttle({ auth: { limit: 5, ttl: 60000 } })
+  @SkipThrottle({ default: true, auth: false })
+  @Throttle({ auth: {} })
   @Post('refresh')
   refresh(@CurrentUser() user: JwtRefreshPayload, @Body() dto: RefreshTokenDto) {
     void dto;
@@ -68,28 +72,32 @@ export class AuthController {
   }
 
   @Public()
-  @Throttle({ auth: { limit: 5, ttl: 60000 } })
+  @SkipThrottle({ default: true, auth: false })
+  @Throttle({ auth: {} })
   @Post('forgot-password')
   forgotPassword(@Body() dto: ForgotPasswordDto) {
     return this.authService.forgotPassword(dto);
   }
 
   @Public()
-  @Throttle({ auth: { limit: 5, ttl: 60000 } })
+  @SkipThrottle({ default: true, auth: false })
+  @Throttle({ auth: {} })
   @Post('reset-password')
   resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto);
   }
 
   @Public()
-  @Throttle({ auth: { limit: 5, ttl: 60000 } })
+  @SkipThrottle({ default: true, auth: false })
+  @Throttle({ auth: {} })
   @Post('verify-email')
   verifyEmail(@Body() dto: VerifyEmailDto, @Ip() ip: string, @Headers('user-agent') userAgent?: string) {
     return this.authService.verifyEmail(dto, ip, userAgent);
   }
 
   @Public()
-  @Throttle({ auth: { limit: 5, ttl: 60000 } })
+  @SkipThrottle({ default: true, auth: false })
+  @Throttle({ auth: {} })
   @Post('resend-email-verification')
   resendEmailVerification(@Body() dto: ResendEmailVerificationDto) {
     return this.authService.resendEmailVerification(dto);

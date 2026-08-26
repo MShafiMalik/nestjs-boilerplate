@@ -93,6 +93,8 @@ Global wiring in `AppModule` / `main.ts`:
 
 ## E2E
 
+Specs mirror `src/modules` under `test/` (`test/auth`, `test/health`, …) with shared helpers in `test/helpers/`.
+
 ```bash
 docker compose up -d
 # env pointed at Compose Postgres/Redis

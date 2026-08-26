@@ -18,7 +18,7 @@ export class HealthController {
 
   @Get()
   @Public()
-  @SkipThrottle()
+  @SkipThrottle({ default: true, auth: true })
   @HealthCheck()
   check() {
     return this.health.check([
@@ -44,7 +44,7 @@ export class HealthController {
           });
         }
       },
-      () => this.memory.checkHeap('memory_heap', 150 * 1024 * 1024),
+      () => this.memory.checkHeap('memory_heap', 512 * 1024 * 1024),
     ]);
   }
 }

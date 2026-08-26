@@ -8,6 +8,10 @@ export class LoggingInterceptor implements NestInterceptor {
   constructor(private readonly logger: LoggerService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    if (process.env.E2E_TESTING === 'true') {
+      return next.handle();
+    }
+
     const http = context.switchToHttp();
     const request = http.getRequest<Request>();
     const response = http.getResponse<Response>();

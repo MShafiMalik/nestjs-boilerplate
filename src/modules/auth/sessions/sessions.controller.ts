@@ -1,9 +1,11 @@
 import { Controller, Delete, Get, Param, ParseUUIDPipe } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import type { JwtPayload } from '../../../common/types/jwt-payload.type';
 import { SessionsService } from './sessions.service';
 
 @Controller('auth/sessions')
+@SkipThrottle({ auth: true })
 export class SessionsController {
   constructor(private readonly sessionsService: SessionsService) {}
 

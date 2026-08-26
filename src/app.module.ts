@@ -24,18 +24,25 @@ import { RedisModule } from './shared/redis/redis.module';
     RedisModule,
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => [
-        {
-          name: 'default',
-          ttl: configService.getOrThrow<number>('throttle.default.ttl'),
-          limit: configService.getOrThrow<number>('throttle.default.limit'),
-        },
-        {
-          name: 'auth',
-          ttl: configService.getOrThrow<number>('throttle.auth.ttl'),
-          limit: configService.getOrThrow<number>('throttle.auth.limit'),
-        },
-      ],
+      useFactory: (configService: ConfigService) => {
+        const skipForE2e = (): boolean =>
+          process.env.E2E_TESTING === 'true' && process.env.E2E_FORCE_THROTTLE !== 'true';
+
+        return [
+          {
+            name: 'default',
+            ttl: configService.getOrThrow<number>('throttle.default.ttl'),
+            limit: configService.getOrThrow<number>('throttle.default.limit'),
+            skipIf: skipForE2e,
+          },
+          {
+            name: 'auth',
+            ttl: configService.getOrThrow<number>('throttle.auth.ttl'),
+            limit: configService.getOrThrow<number>('throttle.auth.limit'),
+            skipIf: skipForE2e,
+          },
+        ];
+      },
     }),
     ModulesModule,
   ],

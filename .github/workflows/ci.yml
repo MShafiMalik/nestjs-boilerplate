@@ -70,6 +70,9 @@ jobs:
       REDIS_PORT: 6379
       ADMIN_EMAIL: admin@example.com
       ADMIN_PASSWORD: Admin@12345
+      THROTTLE_LIMIT: 1000
+      THROTTLE_AUTH_LIMIT: 3
+      E2E_TESTING: 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

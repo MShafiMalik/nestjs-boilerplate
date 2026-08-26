@@ -151,9 +151,19 @@ nestjs-boilerplate/
 │           └── cron.processor.ts
 └── test/
     ├── jest-e2e.json
-    ├── app.e2e-spec.ts
-    └── helpers/
-        └── prisma.ts
+    ├── setup-e2e.ts
+    ├── helpers/
+    │   ├── app.ts
+    │   ├── auth.ts
+    │   ├── cleanup.ts
+    │   ├── e2e-context.ts
+    │   ├── prisma.ts
+    │   └── sessions.ts
+    ├── auth/
+    │   ├── auth.e2e-spec.ts
+    │   └── sessions.e2e-spec.ts
+    └── health/
+        └── health.e2e-spec.ts
 ```
 
 Remove the stock `app.controller.ts`, `app.service.ts`, and `app.controller.spec.ts` once health exists. E2e lives in `test/`.
@@ -231,7 +241,7 @@ Error:
 | 10 | Seed + admin user | ✅ |
 | 11 | GitHub Actions CI | ✅ |
 | 12 | README + final wiring | ✅ |
-| 13 | E2E suite | ⬜ |
+| 13 | E2E suite | ✅ |
 
 Legend: ⬜ Pending · 🔄 In progress · ✅ Done
 
@@ -243,18 +253,18 @@ Legend: ⬜ Pending · 🔄 In progress · ✅ Done
 
 ### Tasks
 
-- [ ] Add `.prettierrc`, `.lintstagedrc`, `.commitlintrc`
-- [ ] Tighten `eslint.config.mjs` to `strictTypeChecked` with Nest-friendly overrides
-- [ ] Add `format:check` script for CI
-- [ ] Install Husky, lint-staged, commitlint
-- [ ] Create `src/config/` (app, database, jwt, redis, throttle + Joi schema)
-- [ ] Split database env into host/port/username/password/name/schema; construct Prisma URL
-- [ ] Add `src/config/load-env.ts` for Prisma CLI
-- [ ] Wire `AppConfigModule` as global
-- [ ] Update `main.ts`: prefix, Helmet, CORS, `ValidationPipe`, trust proxy, shutdown hooks, port from config
-- [ ] Add `.env.example` and `.env.development`
-- [ ] Ignore `.env`, `.env.development`, `.env.staging`, `.env.production` in `.gitignore`
-- [ ] Add `docker-compose.yml` for Postgres and Redis
+- [x] Add `.prettierrc`, `.lintstagedrc`, `.commitlintrc`
+- [x] Tighten `eslint.config.mjs` to `strictTypeChecked` with Nest-friendly overrides
+- [x] Add `format:check` script for CI
+- [x] Install Husky, lint-staged, commitlint
+- [x] Create `src/config/` (app, database, jwt, redis, throttle + Joi schema)
+- [x] Split database env into host/port/username/password/name/schema; construct Prisma URL
+- [x] Add `src/config/load-env.ts` for Prisma CLI
+- [x] Wire `AppConfigModule` as global
+- [x] Update `main.ts`: prefix, Helmet, CORS, `ValidationPipe`, trust proxy, shutdown hooks, port from config
+- [x] Add `.env.example` and `.env.development`
+- [x] Ignore `.env`, `.env.development`, `.env.staging`, `.env.production` in `.gitignore`
+- [x] Add `docker-compose.yml` for Postgres and Redis
 
 Filters and interceptors land in Stage 2. Prisma lands in Stage 3.
 
@@ -430,17 +440,17 @@ Database vars (`DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_USERNAME`, `DATABASE_
 
 ### Tasks
 
-- [ ] Types: `api-response.type.ts`, `jwt-payload.type.ts`
-- [ ] Enums: `Role.USER`, `Role.ADMIN` and `Platform.WEB`, `Platform.IOS`, `Platform.ANDROID` (must match Prisma enums)
-- [ ] Constants: pagination, salt rounds, headers, request-id header, max sessions, session cache TTL, password-reset TTL, email-verification TTL/cooldown
-- [ ] Decorators: `@Public()`, `@Roles()`, `@CurrentUser()`
-- [ ] Guards: `JwtAuthGuard` (respect `@Public()`), `RolesGuard`
-- [ ] `HttpExceptionFilter` (`@Catch()`)
-- [ ] `ResponseInterceptor`, `LoggingInterceptor`
-- [ ] `RequestIdMiddleware` (`X-Request-ID`)
-- [ ] Pagination DTOs
-- [ ] `UtilModule` + `UtilService` (hash/compare password, sha256, pagination params, random string, OTP, date helpers)
-- [ ] Register middleware in `AppModule`; register filter + interceptors in `main.ts`
+- [x] Types: `api-response.type.ts`, `jwt-payload.type.ts`
+- [x] Enums: `Role.USER`, `Role.ADMIN` and `Platform.WEB`, `Platform.IOS`, `Platform.ANDROID` (must match Prisma enums)
+- [x] Constants: pagination, salt rounds, headers, request-id header, max sessions, session cache TTL, password-reset TTL, email-verification TTL/cooldown
+- [x] Decorators: `@Public()`, `@Roles()`, `@CurrentUser()`
+- [x] Guards: `JwtAuthGuard` (respect `@Public()`), `RolesGuard`
+- [x] `HttpExceptionFilter` (`@Catch()`)
+- [x] `ResponseInterceptor`, `LoggingInterceptor`
+- [x] `RequestIdMiddleware` (`X-Request-ID`)
+- [x] Pagination DTOs
+- [x] `UtilModule` + `UtilService` (hash/compare password, sha256, pagination params, random string, OTP, date helpers)
+- [x] Register middleware in `AppModule`; register filter + interceptors in `main.ts`
 
 ### JWT payload
 
@@ -485,12 +495,12 @@ EMAIL_VERIFICATION_COOLDOWN_MINUTES: 1,
 
 ### Tasks
 
-- [ ] Install Prisma
-- [ ] Add `prisma/schema.prisma`
-- [ ] Add `PrismaService` + global `PrismaModule`
-- [ ] Add npm scripts (Prisma CLI must load `src/config/load-env.ts` so `DATABASE_URL` is constructed)
-- [ ] Run initial migration
-- [ ] Enable `prisma generate` on install (`postinstall`)
+- [x] Install Prisma
+- [x] Add `prisma/schema.prisma`
+- [x] Add `PrismaService` + global `PrismaModule`
+- [x] Add npm scripts (Prisma CLI must load `src/config/load-env.ts` so `DATABASE_URL` is constructed)
+- [x] Run initial migration
+- [x] Enable `prisma generate` on install (`postinstall`)
 
 ### Dependencies
 
@@ -631,10 +641,10 @@ User removal goes through `softDelete` so the original address can register agai
 
 ### Tasks
 
-- [ ] Winston `LoggerService` implementing Nest's `LoggerService`
-- [ ] Redis module with `ioredis` (fail-fast retries)
-- [ ] Import both in `AppModule`
-- [ ] Wire Winston as the Nest logger in `main.ts`
+- [x] Winston `LoggerService` implementing Nest's `LoggerService`
+- [x] Redis module with `ioredis` (fail-fast retries)
+- [x] Import both in `AppModule`
+- [x] Wire Winston as the Nest logger in `main.ts`
 
 ```bash
 npm install winston ioredis
@@ -663,10 +673,10 @@ Nest internal logs (routes, shutdown, exceptions) then go through Winston. `Logg
 
 ### Tasks
 
-- [ ] `UsersRepository` — Prisma wrappers
-- [ ] `UsersService` — throw `NotFoundException` when missing
-- [ ] `UsersModule` exports `UsersService` (and repository if auth needs it)
-- [ ] Profile HTTP lives on auth; users module is the data layer
+- [x] `UsersRepository` — Prisma wrappers
+- [x] `UsersService` — throw `NotFoundException` when missing
+- [x] `UsersModule` exports `UsersService` (and repository if auth needs it)
+- [x] Profile HTTP lives on auth; users module is the data layer
 
 ### Repository methods
 
@@ -698,14 +708,14 @@ HTTP-facing service methods omit `password` and reset hashes. Auth uses the pass
 
 ### Tasks
 
-- [ ] `AuthModule` with `PassportModule` + `JwtModule.registerAsync` + `SessionsModule` + `UsersModule`
-- [ ] `JwtStrategy` (access) and `JwtRefreshStrategy`
-- [ ] Apply `JwtAuthGuard`, `RolesGuard` globally (`APP_GUARD`). `ThrottlerGuard` is registered in `AppModule`
-- [ ] Register / login / refresh / logout / profile / change-password / forgot-password / reset-password / verify-email / resend-verification / delete-account
-- [ ] Verify-email creates a session and returns tokens
-- [ ] Inactive-user and unverified-email checks on login and refresh
-- [ ] Register returns 409 on duplicate email (case-insensitive); success does not issue tokens
-- [ ] `SessionsModule` repository + service (list/revoke HTTP, device parser, and Redis cache land in Stage 7)
+- [x] `AuthModule` with `PassportModule` + `JwtModule.registerAsync` + `SessionsModule` + `UsersModule`
+- [x] `JwtStrategy` (access) and `JwtRefreshStrategy`
+- [x] Apply `JwtAuthGuard`, `RolesGuard` globally (`APP_GUARD`). `ThrottlerGuard` is registered in `AppModule`
+- [x] Register / login / refresh / logout / profile / change-password / forgot-password / reset-password / verify-email / resend-verification / delete-account
+- [x] Verify-email creates a session and returns tokens
+- [x] Inactive-user and unverified-email checks on login and refresh
+- [x] Register returns 409 on duplicate email (case-insensitive); success does not issue tokens
+- [x] `SessionsModule` repository + service (list/revoke HTTP, device parser, and Redis cache land in Stage 7)
 
 ```bash
 npm install @nestjs/jwt @nestjs/passport passport passport-jwt bcrypt bowser @nestjs/throttler
@@ -844,12 +854,12 @@ Pass `req.ip` and `req.headers['user-agent']` from the controller into `login` /
 
 ### Tasks
 
-- [ ] `SessionsRepository` wrapping Prisma
-- [ ] `SessionsService` (create, list, validate, revoke, revoke all, revoke others, touch, Redis cache)
-- [ ] `DeviceParserService` — parse web `User-Agent` with Bowser
-- [ ] `SessionsController` under `auth/sessions`
-- [ ] `SessionResponseDto`
-- [ ] Import `SessionsModule` from `AuthModule`; export `SessionsService`
+- [x] `SessionsRepository` wrapping Prisma
+- [x] `SessionsService` (create, list, validate, revoke, revoke all, revoke others, touch, Redis cache)
+- [x] `DeviceParserService` — parse web `User-Agent` with Bowser
+- [x] `SessionsController` under `auth/sessions`
+- [x] `SessionResponseDto`
+- [x] Import `SessionsModule` from `AuthModule`; export `SessionsService`
 
 ### Endpoints (all require access JWT)
 
@@ -1241,10 +1251,10 @@ Register `ThrottlerModule.forRootAsync` in `AppModule` (not only AuthModule) and
 
 ### Tasks
 
-- [ ] Replace stock `test/app.e2e-spec.ts`
-- [ ] Add `test/helpers/prisma.ts` (PrismaClient for arranging verification tokens)
-- [ ] Run against the same Compose / CI Postgres + Redis
-- [ ] Keep tests small and stable
+- [x] Replace stock `test/app.e2e-spec.ts`
+- [x] Add `test/helpers/prisma.ts` (PrismaClient for arranging verification tokens)
+- [x] Run against the same Compose / CI Postgres + Redis
+- [x] Keep tests small and stable
 
 Use existing `npm run test:e2e` (`jest --config ./test/jest-e2e.json`). Tests boot the Nest app with `supertest`.
 
