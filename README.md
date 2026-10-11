@@ -108,3 +108,7 @@ CI runs the same flow with service containers (see `.github/workflows/ci.yml`).
 ## Implementation plan
 
 Step-by-step stages and decisions are documented in [`IMPLEMENTATION.md`](./IMPLEMENTATION.md).
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
